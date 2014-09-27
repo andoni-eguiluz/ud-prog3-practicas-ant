@@ -16,7 +16,7 @@ public class JLabelCoche extends JLabel {
 	private static final long serialVersionUID = 1L;  // Para serialización
 	public static final int TAMANYO_COCHE = 100;  // píxels (igual ancho que algo)
 	public static final int RADIO_ESFERA_COCHE = 35;  // Radio en píxels del bounding circle del coche (para choques)
-	private static final boolean DIBUJAR_ESFERA_COCHE = true;  // Dibujado (para depuración) del bounding circle de choque del coche
+	private static final boolean DIBUJAR_ESFERA_COCHE = false;  // Dibujado (para depuración) del bounding circle de choque del coche
 	
 	/** Construye y devuelve el JLabel del coche con su gráfico y tamaño
 	 */
