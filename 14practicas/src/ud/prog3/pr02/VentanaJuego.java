@@ -17,7 +17,6 @@ public class VentanaJuego extends JFrame {
 	MundoJuego miMundo;        // Mundo del juego
 	CocheJuego miCoche;        // Coche del juego
 	MiRunnable miHilo = null;  // Hilo del bucle principal de juego	
-	JButton bAcelerar;
 
 	/** Constructor de la ventana de juego. Crea y devuelve la ventana inicializada
 	 * sin coches dentro
@@ -28,7 +27,7 @@ public class VentanaJuego extends JFrame {
 		// Creación contenedores y componentes
 		pPrincipal = new JPanel();
 		JPanel pBotonera = new JPanel();
-		bAcelerar = new JButton( "Acelera" );
+		JButton bAcelerar = new JButton( "Acelera" );
 		JButton bFrenar = new JButton( "Frena" );
 		JButton bGiraIzq = new JButton( "Gira Izq." );
 		JButton bGiraDer = new JButton( "Gira Der." );
@@ -49,14 +48,14 @@ public class VentanaJuego extends JFrame {
 		bAcelerar.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				miCoche.acelera( +10 );
+				miCoche.acelera( +10, 1 );
 				// System.out.println( "Nueva velocidad de coche: " + miCoche.getVelocidad() );
 			}
 		});
 		bFrenar.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				miCoche.acelera( -10 );
+				miCoche.acelera( -10, 1 );
 				// System.out.println( "Nueva velocidad de coche: " + miCoche.getVelocidad() );
 			}
 		});
@@ -81,11 +80,11 @@ public class VentanaJuego extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_UP: {
-						miCoche.acelera( +5 );
+						miCoche.acelera( +5, 1 );
 						break;
 					}
 					case KeyEvent.VK_DOWN: {
-						miCoche.acelera( -5 );
+						miCoche.acelera( -5, 1 );
 						break;
 					}
 					case KeyEvent.VK_LEFT: {

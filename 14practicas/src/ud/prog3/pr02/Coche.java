@@ -76,9 +76,10 @@ public class Coche {
 
 	/** Cambia la velocidad actual del coche
 	 * @param aceleracion	Incremento/decremento de la velocidad en pixels/segundo
+	 * @param tiempo	Tiempo transcurrido en segundos
 	 */
-	public void acelera( double aceleracion ) {
-		miVelocidad = miVelocidad + aceleracion;
+	public void acelera( double aceleracion, double tiempo ) {
+		miVelocidad = MundoJuego.calcVelocidadConAceleracion( miVelocidad, aceleracion, tiempo );
 	}
 	
 	/** Cambia la dirección actual del coche

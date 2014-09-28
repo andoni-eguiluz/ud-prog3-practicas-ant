@@ -98,4 +98,14 @@ public class MundoJuego {
 		// el negativo es porque en pantalla la Y crece hacia abajo y no hacia arriba
 	}
 	
+	/** Calcula el cambio de velocidad en función de la aceleración
+	 * @param vel		Velocidad original
+	 * @param acel		Aceleración aplicada (puede ser negativa) en pixels/sg2
+	 * @param tiempo	Tiempo transcurrido en segundos
+	 * @return	Nueva velocidad
+	 */
+	public static double calcVelocidadConAceleracion( double vel, double acel, double tiempo ) {
+		return vel + (acel*tiempo);
+	}
+	
 }
