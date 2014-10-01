@@ -1,6 +1,6 @@
-package utils.ventanaGrafica;
+package ud.prog3.utils.ventanaGrafica;
 
-import utils.ventanaGrafica.img.Img;
+import ud.prog3.utils.ventanaGrafica.img.Img;
 
 import javax.swing.*;
 

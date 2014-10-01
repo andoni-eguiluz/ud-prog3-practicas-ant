@@ -1,4 +1,4 @@
-package utils.ventanaGrafica.eventos;
+package ud.prog3.utils.ventanaGrafica.eventos;
 
 /** Interfaz para eventos que se pueden producir en una ventana gráfica 
  * @author eguiluz

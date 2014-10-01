@@ -1,4 +1,4 @@
-package utils.ventanaGrafica.img;
+package ud.prog3.utils.ventanaGrafica.img;
 
 public class Img {
 	/** Devuelve la URL de un recurso de imagen dado en este paquete

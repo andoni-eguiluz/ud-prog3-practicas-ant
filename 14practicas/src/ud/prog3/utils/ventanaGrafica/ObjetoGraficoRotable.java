@@ -1,4 +1,4 @@
-package utils.ventanaGrafica;
+package ud.prog3.utils.ventanaGrafica;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

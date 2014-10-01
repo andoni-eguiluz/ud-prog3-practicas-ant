@@ -1,4 +1,4 @@
-package utils.ventanaGrafica;
+package ud.prog3.utils.ventanaGrafica;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -7,8 +7,8 @@ import java.util.Arrays;
 
 import javax.swing.*;
 
-import utils.ventanaGrafica.ObjetoGrafico;
-import utils.ventanaGrafica.eventos.*;
+import ud.prog3.utils.ventanaGrafica.ObjetoGrafico;
+import ud.prog3.utils.ventanaGrafica.eventos.*;
 
 /** Clase de utilidad para poder realizar juegos o animaciones
  * utilizando una ventana con elementos gráficos.

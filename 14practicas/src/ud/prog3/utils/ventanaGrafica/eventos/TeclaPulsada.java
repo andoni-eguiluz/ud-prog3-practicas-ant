@@ -1,10 +1,10 @@
-package utils.ventanaGrafica.eventos;
+package ud.prog3.utils.ventanaGrafica.eventos;
 
 import java.awt.event.KeyEvent;
 
-public class TeclaSoltada implements EventoTeclado {
+public class TeclaPulsada implements EventoTeclado {
 	private KeyEvent ke;
-	public TeclaSoltada( KeyEvent ke ) {
+	public TeclaPulsada( KeyEvent ke ) {
 		this.ke = ke;
 	}
 	@Override
@@ -21,6 +21,6 @@ public class TeclaSoltada implements EventoTeclado {
 	}
 	@Override
 	public String toString() {
-		return "TeclaSoltada: código " + getCodigoTecla() + " (car. '" + getCarTecla() + "')";
+		return "TeclaPulsada: código " + getCodigoTecla() + " (car. '" + getCarTecla() + "')";
 	}
 }

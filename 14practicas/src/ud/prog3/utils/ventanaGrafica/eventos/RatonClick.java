@@ -1,4 +1,4 @@
-package utils.ventanaGrafica.eventos;
+package ud.prog3.utils.ventanaGrafica.eventos;
 
 import java.awt.Point;
 import java.awt.event.MouseEvent;
