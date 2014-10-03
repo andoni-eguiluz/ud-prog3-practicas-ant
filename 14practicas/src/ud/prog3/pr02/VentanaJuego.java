@@ -17,8 +17,6 @@ public class VentanaJuego extends JFrame {
 	MundoJuego miMundo;        // Mundo del juego
 	CocheJuego miCoche;        // Coche del juego
 	MiRunnable miHilo = null;  // Hilo del bucle principal de juego	
-	//
-	//
 
 	/** Constructor de la ventana de juego. Crea y devuelve la ventana inicializada
 	 * sin coches dentro
@@ -30,7 +28,6 @@ public class VentanaJuego extends JFrame {
 		pPrincipal = new JPanel();
 		JPanel pBotonera = new JPanel();
 		JButton bAcelerar = new JButton( "Acelera" );
-		// Comentario de prueba (quitar)
 		JButton bFrenar = new JButton( "Frena" );
 		JButton bGiraIzq = new JButton( "Gira Izq." );
 		JButton bGiraDer = new JButton( "Gira Der." );
