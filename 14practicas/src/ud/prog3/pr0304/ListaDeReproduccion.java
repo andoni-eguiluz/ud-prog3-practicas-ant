@@ -27,7 +27,7 @@ public class ListaDeReproduccion implements ListModel<String> {
 	ArrayList<Boolean> ficherosErroneos;  // ficheros de esa lista que son erróneos (true-false para cada uno)
 	int ficheroEnCurso = -1;   // Fichero seleccionado (-1 si no hay ninguno seleccionado)
 
-	private static final boolean ANYADIR_A_FIC_LOG = false;  // poner true para no sobreescribir en cada ejecución
+	private static final boolean ANYADIR_A_FIC_LOG = false;  // poner true para hacer append en cada ejecución
 	
 	// Logger de la clase
 	private static Logger logger = Logger.getLogger( ListaDeReproduccion.class.getName() );
@@ -92,8 +92,7 @@ public class ListaDeReproduccion implements ListModel<String> {
 				if (fInic.isDirectory()) {
 					for( File f : fInic.listFiles() ) {
 						logger.log( Level.FINE, "Procesando fichero " + f.getName() );
-						if ( pFics.matcher(f.getName()).matches() ) {
-							// Si cumple el patrón, se añade
+						if (f.isFile() && pFics.matcher(f.getName()).matches() ) { // Si cumple el patrón, se añade
 							ficsAnyadidos++;
 							logger.log( Level.INFO, "Añadido vídeo a lista de reproducción: " + f.getName() );
 							add( f );
@@ -298,7 +297,11 @@ public class ListaDeReproduccion implements ListModel<String> {
 	}
 
 		// Escuchadores de datos de la lista
-		ArrayList<ListDataListener> misEscuchadores = new ArrayList<>();
+		transient ArrayList<ListDataListener> misEscuchadores = initDataListeners();
+		public ArrayList<ListDataListener> initDataListeners() {
+			misEscuchadores = new ArrayList<>();
+			return misEscuchadores;
+		}
 	@Override
 	public void addListDataListener(ListDataListener l) {
 		misEscuchadores.add( l );

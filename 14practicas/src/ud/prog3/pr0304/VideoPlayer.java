@@ -48,13 +48,17 @@ public class VideoPlayer extends JFrame {
 	private JTextField tfPropCantante = null; // Label para propiedades - cantante
 	private JTextField tfPropComentarios=null;// Label para propiedades - comentarios
 	JPanel pBotonera;                         // Panel botonera (superior)
+	JPanel pBotoneraLR;                       // Panel botonera (lista de reproducción)
 	ArrayList<JButton> botones;               // Lista de botones
+	ArrayList<JButton> botonesLR;             // Lista de botones (lista de reproducción)
 	JScrollPane spLCanciones;                 // Scrollpane de lista de repr (izquierda)
 	// Datos asociados a la ventana
 	private ListaDeReproduccion listaRepVideos;  // Modelo para la lista de vídeos
 	// Array auxiliar y enumerado para gestión de botones
 	static String[] ficsBotones = new String[] { "Button Add", "Button Rewind", "Button Play Pause", "Button Fast Forward", "Button Maximize" };
 	static enum BotonDe { ANYADIR, ATRAS, PLAY_PAUSA, AVANCE, MAXIMIZAR };  // Mismo orden que el array
+	static String[] ficsBotonesLR = new String[] { "open", "save", "saveas" };
+	static enum BotonDeLR { LOAD, SAVE, SAVEAS };  // Mismo orden que el array
 
 		// Renderer para la lista vertical de vídeos (colorea diferente los elementos erróneos)
 		private DefaultListCellRenderer miListRenderer = new DefaultListCellRenderer() {
@@ -85,6 +89,7 @@ public class VideoPlayer extends JFrame {
 		tfPropCantante = new JTextField( "", 10 );
 		tfPropComentarios = new JTextField( "", 30 );
 		pBotonera = new JPanel();
+		pBotoneraLR = new JPanel();
 		// En vez de "a mano":
 		// JButton bAnyadir = new JButton( new ImageIcon( VideoPlayer.class.getResource("img/Button Add.png")) );
 		// JButton bAtras = new JButton( new ImageIcon( VideoPlayer.class.getResource("img/Button Rewind.png")) );
@@ -99,9 +104,15 @@ public class VideoPlayer extends JFrame {
 			botones.add( boton );
 			boton.setName(fic);  // Pone el nombre al botón del fichero (útil para testeo o depuración)
 		}
+		botonesLR = new ArrayList<>();
+		for (String fic : ficsBotonesLR) {
+			JButton boton = new JButton( new ImageIcon( VideoPlayer.class.getResource( "img/" + fic + ".png" )) );
+			botonesLR.add( boton );
+			boton.setName(fic);  // Pone el nombre al botón del fichero (útil para testeo o depuración)
+		}
 		JPanel pPropiedades = new JPanel();
 		JPanel pInferior = new JPanel();
-		JPanel pIzquierda = new JPanel();
+		final JPanel pIzquierda = new JPanel();
 		
 		// Componente de VCLj
         mediaPlayerComponent = new EmbeddedMediaPlayerComponent() {
@@ -126,6 +137,14 @@ public class VideoPlayer extends JFrame {
             		new ImageIcon( VideoPlayer.class.getResource( "img/" + ficsBotones[indBoton] + "-CL.png" ) ) );
         	indBoton++;
         }
+        indBoton = 0;
+        for (JButton boton : botonesLR) {  // Formato de botones para que se vea solo el gráfico
+        	boton.setOpaque(false);            // Fondo Transparente (los gráficos son png transparentes)
+        	boton.setContentAreaFilled(false); // No rellenar el área
+        	boton.setBorderPainted(false);     // No pintar el borde
+        	boton.setBorder(null);             // No considerar el borde (el botón se hace sólo del tamaño del gráfico)
+        	indBoton++;
+        }
         lMensaje2.setForeground( Color.white );
         lMensaje2.setFont( new Font( "Arial", Font.BOLD, 18 ));
 		setTitle("Video Player - Deusto Ingeniería");
@@ -139,9 +158,11 @@ public class VideoPlayer extends JFrame {
 		pInferior.setLayout( new BorderLayout() );
 		pIzquierda.setLayout( new BorderLayout() );
 		pPropiedades.setVisible( false );
+		pBotoneraLR.setVisible( false );
 		
 		// Enlace de componentes y contenedores
 		for (JButton boton : botones ) pBotonera.add( boton );
+		for (JButton boton : botonesLR ) pBotoneraLR.add( boton );
 		pBotonera.add( lMensaje2 );
 		pBotonera.add( cbAleatorio );
 		pBotonera.add( lMensaje );
@@ -154,6 +175,7 @@ public class VideoPlayer extends JFrame {
 		pInferior.add( pPropiedades, BorderLayout.NORTH );
 		pInferior.add( pbVideo, BorderLayout.SOUTH );
 		pIzquierda.add( spLCanciones, BorderLayout.CENTER );
+		pIzquierda.add( pBotoneraLR, BorderLayout.SOUTH );
 
 		getContentPane().add( mediaPlayerComponent, BorderLayout.CENTER );
 		getContentPane().add( pBotonera, BorderLayout.NORTH );
@@ -222,12 +244,12 @@ public class VideoPlayer extends JFrame {
 				if (mediaPlayer.isFullScreen()) {
 					mediaPlayer.setFullScreen(false);
 			        // Añadido para dejar más espacio en la pantalla maximizada
-					spLCanciones.setVisible( true );
+					pIzquierda.setVisible( true );
 					pBotonera.setBackground( Color.LIGHT_GRAY );
 				} else {
 					mediaPlayer.setFullScreen(true);
 			        // Añadido para dejar más espacio en la pantalla maximizada
-					spLCanciones.setVisible( false );
+					pIzquierda.setVisible( false );
 					pBotonera.setBackground( Color.BLACK );
 				}
 			}
