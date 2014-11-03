@@ -6,6 +6,7 @@ package ud.prog3.pr0506;
  */
 public class BancoDePruebas {
 	private static long ultimoTiempo;
+	private static Object ultimoResultado;
 	
 	/** Realiza un test del banco de pruebas, inicializándolo previamente y devolviendo el tiempo que tarda
 	 * @param proc	Proceso a probar
@@ -15,17 +16,18 @@ public class BancoDePruebas {
 	public static long realizaTest( ProcesoProbable proc, int tamanyoPrueba ) {
 		proc.init( tamanyoPrueba );
 		ultimoTiempo = System.currentTimeMillis();
-		proc.test( tamanyoPrueba );
+		ultimoResultado = proc.test();
 		return System.currentTimeMillis() - ultimoTiempo;
 	}
 	
 	/** Devuelve el tamaño del objeto creado por el test ya realizado del banco de pruebas.<p>
-	 * Previamente debe llamarse a millisTest para que el proceso se realice y retorne ese objeto resultado.
+	 * Previamente debe llamarse a realizaTest para que el proceso se realice y retorne ese objeto resultado.
 	 * @param proc
 	 * @return
 	 */
 	public static int getTamanyoTest( ProcesoProbable proc ) {
-		return ExploradorObjetos.getTamanyoObjeto( proc.getResultado() );
+		if (ultimoResultado==null) return 0;
+		return ExploradorObjetos.getTamanyoObjeto( ultimoResultado );
 	}
 	
 		// Clase de prueba del banco de pruebas
@@ -37,21 +39,18 @@ public class BancoDePruebas {
 				arrayPrueba = new int[tamanyoTest];
 			}
 			@Override
-			public void test(int tamanyoTest) {
+			public Object test() {
 				int suma = 0;
-				if (arrayPrueba.length<tamanyoTest) throw new NullPointerException( "Error en test no inicializado" );  // Proceso no puede realizarse
+				if (arrayPrueba.length<arrayPrueba.length) throw new NullPointerException( "Error en test no inicializado" );  // Proceso no puede realizarse
 				// Recorrido arriba
-				for (int i=0; i<tamanyoTest; i++) {
+				for (int i=0; i<arrayPrueba.length; i++) {
 					suma += arrayPrueba[i];
 				}
 				// Recorrido abajo
-				for (int i=tamanyoTest-1; i>=0; i--) {
+				for (int i=arrayPrueba.length-1; i>=0; i--) {
 					suma += arrayPrueba[i];
 				}
 				System.out.println( "Proceso de prueba <RecorridoArray>. Suma " + suma );
-			}
-			@Override
-			public Object getResultado() {
 				return arrayPrueba;
 			}
 		}

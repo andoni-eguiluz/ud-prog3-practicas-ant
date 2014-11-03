@@ -5,19 +5,15 @@ package ud.prog3.pr0506;
  * Facultad de Ingeniería - Universidad de Deusto
  */
 public interface ProcesoProbable {
+	
 	/** Método de inicialización de test (si es necesario)
-	 * @param tamanyoTest	Tamaño del test a realizar
+	 * @param tamanyoTest	Tamaño del test a realizar (típicamente, tamaño de la estructura de datos a manejar)
 	 */
 	public void init( int tamanyoTest );
 	
 	/** Realización de la prueba. Debe llamarse antes al método init (cuando la inicialización sea necesaria).
-	 * @param tamanyoTest	Tamaño del test a realizar (típicamente, tamaño de la estructura de datos a manejar)
-	 * @param objetoProducido	Objeto que se devuelve
+	 * @param objetoProducido	Objeto que se devuelve como resultado del test, relacionado con el uso de memoria que se quiere medir.
 	 */
-	public void test( int tamanyoTest );
+	public Object test();
 	
-	/** Resultado del test. Debe llamarse antes al método #test.
-	 * @return	Objeto resultado del test.
-	 */
-	public Object getResultado();
 }

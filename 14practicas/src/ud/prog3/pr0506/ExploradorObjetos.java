@@ -20,11 +20,12 @@ public class ExploradorObjetos {
 	private static String MARCA_OBJETO_PARCIAL = "<...> ";
 	private static String TEXTO_METADATOS = "<Metadatos: Ref.Clase + Flags + Locks>";
 	private static int TAM_METADATOS = 12;
-	private static int NUM_MAX_LLAMADAS = 50;  // Número de llamadas recursivas que se permiten - más se truncan
-	private static int NUM_MAX_ITERATIVIDAD_VISUAL = 100;  // Número de recorrido iterativo máximo que se permite visualizar - más se computa pero no se visualiza
+	private static int NUM_MAX_LLAMADAS = 20;  // Número de llamadas recursivas que se permiten - más se truncan
+	private static int PUNTO_CONTROL = 17;  // Punto de control de las llamadas recursivas para ver iteratividad (menor que NUM_MAX_LLAMADAS para posibilitar que haya recursividades en estructuras con objetos más internos)
+	private static int NUM_MAX_ITERATIVIDAD_VISUAL = 50;  // Número de recorrido iterativo máximo que se permite visualizar - más se computa pero no se visualiza
 	private static int NUM_MAX_ITERATIVIDAD = 10000000;  // Número de recorrido iterativo máximo que se permite - más se truncan (ni se visualizan ni se computan)
 	private static int NUM_MAX_SEPRS = 10; // Número de llamadas recursivas que se visualizan con separador - más se mantiene la separación y se indica "...(n) " al principio
-	private static int NUM_REC_COINC = 5;  // Número de llamadas recursivas coincidentes en atributo y espacio para hacer iteratividad
+	private static int NUM_REC_COINC = 8;  // Número de llamadas recursivas coincidentes en atributo y espacio para hacer iteratividad
 	private static int TAM_REF_EN_BYTES = 4;
 	private static HashMap<String, Integer> TAM_EN_BYTES;
 	static {
@@ -53,8 +54,8 @@ public class ExploradorObjetos {
 	
 	/** Calcula un string para visualización de atributos (y sus valores, y sus tamaños en memoria) del objeto indicado
 	 * @param mens	Mensaje inicial que se muestra en consola en la primera línea
-	 * @param mens	Separador (de tabulación) que se usa en cada línea de atributo
-	 * @param o	Objeto que se quiere analizar
+	 * @param sep	Separador (de tabulación) que se usa en cada línea de atributo
+	 * @param o	Objeto que se quiere analizar (diferente de null)
 	 * @param tbStatic	true si se quieren visualizar también los atributos estáticos
 	 * @param mostrarTam true si se quiere mostrar el tamaño ocupado por el objeto y sus atributos
 	 * @return	String maquetado con toda la información
@@ -83,8 +84,8 @@ public class ExploradorObjetos {
 	/** Devuelve un despliegue de los atributos (y sus valores, y sus tamaños en memoria) de un objeto,
 	 * explorando en profundidad todos los objetos contenidos en él.
 	 * @param mens	Mensaje inicial que se muestra en consola en la primera línea
-	 * @param mens	Separador (de tabulación) que se usa en cada línea de atributo
-	 * @param o	Objeto que se quiere analizar
+	 * @param sep	Separador (de tabulación) que se usa en cada línea de atributo
+	 * @param o	Objeto que se quiere analizar (diferente de null)
 	 * @param tbStatic	true si se quieren visualizar también los atributos estáticos
 	 * @param mostrarTam true si se quiere mostrar el tamaño ocupado por el objeto y sus atributos
 	 * @param camposAMostrar String que incluye los nombres de campos que queremos mostrar (el resto no aparecen en el resultado).<p>
@@ -98,7 +99,7 @@ public class ExploradorObjetos {
 	
 	/** Devuelve el tamaño de un objeto en memoria en bytes, explorando en profundidad todos los objetos contenidos en él.
 	 * Devuelve el tamaño completo de todos los objetos referenciados.
-	 * @param o	Objeto que se quiere analizar
+	 * @param o	Objeto que se quiere analizar (diferente de null)
 	 * @return	Tamaño en bytes del objeto
 	 */
 	public static int getTamanyoObjeto(Object o) {
@@ -204,7 +205,8 @@ public class ExploradorObjetos {
 										atsInstancia += (miSep + tam + f.getName() + " = " + aString(f.get( o ), f.getType()) + "\n" );
 								objetosYaRecorridos.add( f.get(o) );
 								int difEspacio = -1;  // Variable que sólo es != -1 si hay iteratividad en vez de recursividad (ver código subsiguiente)
-								if (numLlamadas == NUM_MAX_LLAMADAS) {
+								if (numLlamadas == PUNTO_CONTROL) {
+									// System.out.println( "##" + ultimosAtEsp );
 									if (ultimosAtEsp.getEquals()!=null && ultimosAtEsp.getEquals().atributo.equals(f.getName()) && f.get(o)!=null ) {
 										// La recursividad n-1 es del mismo campo que tenemos ahora
 										// 1.- Comprobamos que el espacio se haya ido aumentando de forma coherente
