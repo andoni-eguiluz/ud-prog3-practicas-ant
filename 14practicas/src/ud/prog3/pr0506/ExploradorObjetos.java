@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeSet;
 
+import javax.swing.tree.*;
+
 /** Utilidad de exploración de objetos y sus atributos, usando reflectividad (accede a todos los atributos, aunque sean privados).
  * Suministra información de uso (teórico) de memoria, en una máquina virtual Java de 32 bits.
  * @author Andoni Eguíluz Morán
@@ -49,19 +51,19 @@ public class ExploradorObjetos {
 	private static String atsStatic = "";
 	private static String atsErr = "";
 	private static boolean hayErr = false;
-	private static boolean soloCalcTamanyo = false;
+	private static boolean soloCalcTamanyo = false;      // Utilizado para recorridos de devolver tamaño en lugar de crear String
+	private static DefaultMutableTreeNode raiz = null;   // Utilizado para recorridos de crear árbol en lugar de crear String
 	private static UltimasN<AtributoYEspacio> ultimosAtEsp = new UltimasN<>(NUM_REC_COINC);
 	
 	/** Calcula un string para visualización de atributos (y sus valores, y sus tamaños en memoria) del objeto indicado
-	 * @param mens	Mensaje inicial que se muestra en consola en la primera línea
 	 * @param sep	Separador (de tabulación) que se usa en cada línea de atributo
 	 * @param o	Objeto que se quiere analizar (diferente de null)
 	 * @param tbStatic	true si se quieren visualizar también los atributos estáticos
 	 * @param mostrarTam true si se quiere mostrar el tamaño ocupado por el objeto y sus atributos
 	 * @return	String maquetado con toda la información
 	 */
-	public static String atributosYValoresToString( String mens, String sep, Object o, boolean tbStatic, boolean mostrarTam ) {
-		ret = (mens.equals("")) ? "" : (mens + "\n");
+	public static String atributosYValoresToString( String sep, Object o, boolean tbStatic, boolean mostrarTam ) {
+		ret = "";
 		atsInstancia = !tbStatic ? "" : "Atributos de instancia:\n";
 		atsStatic = "Atributos de clase (static):\n";
 		atsErr = "Errores de acceso a atributos:\n";
@@ -70,7 +72,7 @@ public class ExploradorObjetos {
 		hayErr = false;
 		// objetosYaRecorridos = new HashSet<>();  // Hecho ya una vez en inicialización
 		// ultimosAtEsp = new UltimasN<>(5);  // Hecho ya en inicialización
-		atributosYValoresToStringRec( mens, sep, o, tbStatic, mostrarTam );
+		atributosYValoresToStringRec( sep, o, tbStatic, mostrarTam, raiz );
 		objetosYaRecorridos.clear();
 		ultimosAtEsp.clear();
 		ret += atsInstancia;
@@ -83,7 +85,6 @@ public class ExploradorObjetos {
 	
 	/** Devuelve un despliegue de los atributos (y sus valores, y sus tamaños en memoria) de un objeto,
 	 * explorando en profundidad todos los objetos contenidos en él.
-	 * @param mens	Mensaje inicial que se muestra en consola en la primera línea
 	 * @param sep	Separador (de tabulación) que se usa en cada línea de atributo
 	 * @param o	Objeto que se quiere analizar (diferente de null)
 	 * @param tbStatic	true si se quieren visualizar también los atributos estáticos
@@ -92,9 +93,9 @@ public class ExploradorObjetos {
 	 * Por ejemplo, si queremos los atributos root y left podríamos pasar "root#left" a este parámetro.
 	 * @return	String maquetado con toda la información
 	 */
-	public static String atributosYValoresToString( String mens, String sep, Object o, boolean tbStatic, boolean mostrarTam, String camposAMostrar ) {
+	public static String atributosYValoresToString( String sep, Object o, boolean tbStatic, boolean mostrarTam, String camposAMostrar ) {
 		ExploradorObjetos.camposAMostrar = camposAMostrar;
-		return atributosYValoresToString(mens, sep, o, tbStatic, mostrarTam );
+		return atributosYValoresToString( sep, o, tbStatic, mostrarTam );
 	}
 	
 	/** Devuelve el tamaño de un objeto en memoria en bytes, explorando en profundidad todos los objetos contenidos en él.
@@ -104,13 +105,33 @@ public class ExploradorObjetos {
 	 */
 	public static int getTamanyoObjeto(Object o) {
 		soloCalcTamanyo = true;
-		atributosYValoresToString("", "", o, false, true );
+		atributosYValoresToString( "", o, false, true );
 		soloCalcTamanyo = false;
 		return tamObjeto;
 	}
 	
+	/** Devuelve un despliegue de los atributos (y sus valores, y sus tamaños en memoria) de un objeto,
+	 * introduciéndolos en un modelo de datos de árbol, visualizable en un JTree.
+	 * @param o	Objeto que se quiere analizar (diferente de null)
+	 * @return	Tamaño en bytes del objeto
+	 */
+	public static DefaultTreeModel atributosYValoresToTree(Object o) {
+		raiz = new DefaultMutableTreeNode( o.toString() );
+		DefaultTreeModel arbol = new DefaultTreeModel( raiz );
+		atributosYValoresToString( "", o, false, true );
+		raiz = null;
+		return arbol;
+	}
+		// Método de utilidad para los árboles
+		private static DefaultMutableTreeNode anyadirHijoArbol( DefaultMutableTreeNode raiz, String nuevoHijo ) {
+			DefaultMutableTreeNode nuevo = new DefaultMutableTreeNode( nuevoHijo );
+			raiz.add( nuevo );
+			return nuevo;
+		}
+	
 		private static String tamDe(int tam) { return "{" + tam + "} "; }
-	private static void atributosYValoresToStringRec( String mens, String sep, Object o, boolean tbStatic, boolean mostrarTam ) {
+	private static void atributosYValoresToStringRec( String sep, Object o, boolean tbStatic, boolean mostrarTam, DefaultMutableTreeNode raiz ) {
+		DefaultMutableTreeNode nodoHijo = null;
 		String miSep = sep+SEPR;
 		String sepSgte = miSep;
 		if (numLlamadas > NUM_MAX_SEPRS) {
@@ -120,7 +141,12 @@ public class ExploradorObjetos {
 		Class<?> c = o.getClass();
 		Field fs[] = c.getDeclaredFields();
 		tamObjeto += TAM_METADATOS;
-		if (mostrarTam && !soloCalcTamanyo) atsInstancia += (miSep + tamDe(TAM_METADATOS) + TEXTO_METADATOS + "\n" );
+		if (mostrarTam && !soloCalcTamanyo) {
+			if (raiz==null)
+				atsInstancia += (miSep + tamDe(TAM_METADATOS) + TEXTO_METADATOS + "\n" );
+			else
+				anyadirHijoArbol( raiz, tamDe(TAM_METADATOS) + TEXTO_METADATOS );
+		}
 		if (c.getName().startsWith("[")) {  // El objeto es un array. Ojo entonces no tiene atributos - es un objeto especial
 			String tipoArr = tipoArray(o);
 			int tamArr = tamArray(o);
@@ -132,24 +158,34 @@ public class ExploradorObjetos {
 			String tam = (mostrarTam) ? tamDe(tamanyo) : "";
 			tamObjeto += tamanyo;
 			if (camposAMostrar.equals("") && !soloCalcTamanyo)
-				atsInstancia += (miSep + tam + " <" + tamArr + ">*" + aString(o, o.getClass()) + "\n");
+				if (raiz==null)
+					atsInstancia += (miSep + tam + " <" + tamArr + ">*" + aString(o, o.getClass()) + "\n");
+				else
+					nodoHijo = anyadirHijoArbol( raiz, tam + " <" + tamArr + ">*" + aString(o, o.getClass()) );
 			if (!TAM_EN_BYTES.containsKey(tipoArr)) {
 				// for de proceso de elementos de array si son objetos (y no son nulls)
 				numLlamadas++;
 				for (int i=0; i<tamArr; i++) {
+					DefaultMutableTreeNode nodoNieto = null;
 					Object oArr = valorArray(o,i);
 					if (oArr!=null) {
 						String tamA = (mostrarTam) ? "{} " : "";
 						if (objetosYaRecorridos.contains( oArr )) {  // Si ya está recorrido, no insistimos :-)
 							if (camposAMostrar.equals("") || camposAMostrar.contains("[]"))
 								if (!soloCalcTamanyo)
-									atsInstancia += (miSep + SEPR + tamA + "[" + i + "] = " + MARCA_OBJETO_YA_VISITADO + aString(oArr, oArr.getClass()) + "\n" );
+									if (raiz==null)
+										atsInstancia += (miSep + SEPR + tamA + "[" + i + "] = " + MARCA_OBJETO_YA_VISITADO + aString(oArr, oArr.getClass()) + "\n" );
+									else
+										anyadirHijoArbol( nodoHijo, tamA + "[" + i + "] = " + MARCA_OBJETO_YA_VISITADO + aString(oArr, oArr.getClass()) );
 						} else {
 							if (camposAMostrar.equals("") || camposAMostrar.contains("[]"))
 								if (!soloCalcTamanyo)
-									atsInstancia += (miSep + SEPR + tamA + "[" + i + "] = " + aString(oArr, oArr.getClass()) + "\n" );
+									if (raiz==null)
+										atsInstancia += (miSep + SEPR + tamA + "[" + i + "] = " + aString(oArr, oArr.getClass()) + "\n" );
+									else
+										nodoNieto = anyadirHijoArbol( nodoHijo, tamA + "[" + i + "] = " + aString(oArr, oArr.getClass()) );
 							objetosYaRecorridos.add( oArr );
-							atributosYValoresToStringRec("", sepSgte+SEPR, oArr, tbStatic, mostrarTam );
+							atributosYValoresToStringRec( sepSgte+SEPR, oArr, tbStatic, mostrarTam, nodoNieto );
 						}
 					}
 				}
@@ -162,7 +198,10 @@ public class ExploradorObjetos {
 					if (Modifier.isStatic(f.getModifiers())) {
 						if (tbStatic)
 							if (camposAMostrar.equals("") || camposAMostrar.contains(f.getName()))
-								atsStatic += (miSep + f.getName() + " = " + aString(f.get( null ), f.getType()) + "\n" );
+								if (raiz==null)
+									atsStatic += (miSep + f.getName() + " = " + aString(f.get( null ), f.getType()) + "\n" );
+								else
+									anyadirHijoArbol( raiz, "STATIC " + f.getName() + " = " + aString(f.get( null ), f.getType()) );
 					} else {
 						// atsInstancia += ( "#" + f.getType().toString().substring(6) );
 						// atsInstancia += ( "# - #" + c.getName().toString() + "#\n" );
@@ -198,11 +237,17 @@ public class ExploradorObjetos {
 							if (objetosYaRecorridos.contains( f.get(o) )) {  // Si ya está recorrido, no insistimos :-)
 								if (camposAMostrar.equals("") || camposAMostrar.contains(f.getName()))
 									if (!soloCalcTamanyo)
-										atsInstancia += (miSep + tam + f.getName() + " = " + MARCA_OBJETO_YA_VISITADO + aString(f.get( o ), f.getType()) + "\n" );
+										if (raiz==null)
+											atsInstancia += (miSep + tam + f.getName() + " = " + MARCA_OBJETO_YA_VISITADO + aString(f.get( o ), f.getType()) + "\n" );
+										else
+											anyadirHijoArbol( raiz, tam + f.getName() + " = " + MARCA_OBJETO_YA_VISITADO + aString(f.get( o ), f.getType()) );
 							} else {
 								if (camposAMostrar.equals("") || camposAMostrar.contains(f.getName()))
 									if (!soloCalcTamanyo)
-										atsInstancia += (miSep + tam + f.getName() + " = " + aString(f.get( o ), f.getType()) + "\n" );
+										if (raiz==null)
+											atsInstancia += (miSep + tam + f.getName() + " = " + aString(f.get( o ), f.getType()) + "\n" );
+										else
+											nodoHijo = anyadirHijoArbol( raiz,  tam + f.getName() + " = " + aString(f.get( o ), f.getType()) );
 								objetosYaRecorridos.add( f.get(o) );
 								int difEspacio = -1;  // Variable que sólo es != -1 si hay iteratividad en vez de recursividad (ver código subsiguiente)
 								if (numLlamadas == PUNTO_CONTROL) {
@@ -225,7 +270,10 @@ public class ExploradorObjetos {
 											miSep = sep + SEPR;
 											Object ref = f.get(o);  // Referencia inicial
 											if (!soloCalcTamanyo)
-												atsInstancia += (miSep + "MOSTRADO ITERATIVAMENTE POR EXCESO DE RECURSIVIDAD (Información parcial, cálculo de espacio correcto)\n");
+												if (raiz==null)
+													atsInstancia += (miSep + "MOSTRADO ITERATIVAMENTE POR EXCESO DE RECURSIVIDAD (Información parcial, cálculo de espacio correcto)\n");
+												else
+													anyadirHijoArbol( raiz, "MOSTRADO ITERATIVAMENTE POR EXCESO DE RECURSIVIDAD (Información parcial, cálculo de espacio correcto)" );
 											String sTam = mostrarTam ? tamDe(difEspacio) : "";
 											boolean errNoRecursivo = true;
 											int numIt = NUM_MAX_LLAMADAS;
@@ -240,7 +288,10 @@ public class ExploradorObjetos {
 														ref = f2.get(ref);
 														objetosYaRecorridos.add( ref );
 														if (numIt<NUM_MAX_ITERATIVIDAD_VISUAL && !soloCalcTamanyo) {
-															atsInstancia += (miSep + "...(" + numIt + ") " + sTam + f2.getName() + " = " + MARCA_OBJETO_PARCIAL + aString(ref, f2.getType()) + "\n" );
+															if (raiz==null)
+																atsInstancia += (miSep + "...(" + numIt + ") " + sTam + f2.getName() + " = " + MARCA_OBJETO_PARCIAL + aString(ref, f2.getType()) + "\n" );
+															else
+																anyadirHijoArbol( raiz, "...(" + numIt + ") " + sTam + f2.getName() + " = " + MARCA_OBJETO_PARCIAL + aString(ref, f2.getType()) );
 														}
 														tamObjeto += difEspacio;
 													}
@@ -253,12 +304,20 @@ public class ExploradorObjetos {
 												numIt++;
 											}
 											if (!soloCalcTamanyo) {
-												if (numIt>=NUM_MAX_ITERATIVIDAD_VISUAL)
-													atsInstancia += (miSep + "(...) REFERENCIAS ADICIONALES NO MOSTRADAS POR EXCESO DE TAMAÑO (cálculo de espacio correcto)\n");
-												if (numIt>=NUM_MAX_ITERATIVIDAD)
-													atsInstancia += (miSep + "ERROR: ALCANZADO TAMAÑO MAXIMO = " + numIt + " (Información parcial, cálculo total de espacio INCORRECTO)\n");
-												if (errNoRecursivo) {
-													atsInstancia += (miSep + "ERROR EN RECURSIVIDAD (Información incorrecta: enlace de objetos no coherente en algún punto)\n");
+												if (raiz==null) {
+													if (numIt>=NUM_MAX_ITERATIVIDAD_VISUAL)
+														atsInstancia += (miSep + "(...) REFERENCIAS ADICIONALES NO MOSTRADAS POR EXCESO DE TAMAÑO (cálculo de espacio correcto)\n");
+													if (numIt>=NUM_MAX_ITERATIVIDAD)
+														atsInstancia += (miSep + "ERROR: ALCANZADO TAMAÑO MAXIMO = " + numIt + " (Información parcial, cálculo total de espacio INCORRECTO)\n");
+													if (errNoRecursivo)
+														atsInstancia += (miSep + "ERROR EN RECURSIVIDAD (Información incorrecta: enlace de objetos no coherente en algún punto)\n");
+												} else {
+													if (numIt>=NUM_MAX_ITERATIVIDAD_VISUAL)
+														anyadirHijoArbol( raiz, "(...) REFERENCIAS ADICIONALES NO MOSTRADAS POR EXCESO DE TAMAÑO (cálculo de espacio correcto)\n");
+													if (numIt>=NUM_MAX_ITERATIVIDAD)
+														anyadirHijoArbol( raiz, "ERROR: ALCANZADO TAMAÑO MAXIMO = " + numIt + " (Información parcial, cálculo total de espacio INCORRECTO)\n");
+													if (errNoRecursivo)
+														anyadirHijoArbol( raiz, "ERROR EN RECURSIVIDAD (Información incorrecta: enlace de objetos no coherente en algún punto)\n");
 												}
 											}
 										}
@@ -266,17 +325,23 @@ public class ExploradorObjetos {
 								}
 								if (numLlamadas > NUM_MAX_LLAMADAS) {
 									if (!soloCalcTamanyo)
-										atsInstancia += (miSep + "TRUNCADO POR EXCESO DE RECURSIVIDAD\n");
-								} else if (difEspacio==-1){
+										if (raiz==null)
+											atsInstancia += (miSep + "TRUNCADO POR EXCESO DE RECURSIVIDAD\n");
+										else
+											anyadirHijoArbol( raiz, "TRUNCADO POR EXCESO DE RECURSIVIDAD" );
+								} else if (difEspacio==-1) {
 									ultimosAtEsp.push( new AtributoYEspacio( f.getName(), tamObjeto ));
-									atributosYValoresToStringRec("", sepSgte, f.get(o), tbStatic, mostrarTam );
+									atributosYValoresToStringRec( sepSgte, f.get(o), tbStatic, mostrarTam, (nodoHijo==null?raiz:nodoHijo) );
 									if (ultimosAtEsp.size()>0) ultimosAtEsp.pop();
 								}
 							}
 						} else {
 							if (camposAMostrar.equals("") || camposAMostrar.contains(f.getName()))
 								if (!soloCalcTamanyo)
-									atsInstancia += (miSep + tam + f.getName() + " = " + aString(f.get( o ), f.getType()) + "\n" );
+									if (raiz==null)
+										atsInstancia += (miSep + tam + f.getName() + " = " + aString(f.get( o ), f.getType()) + "\n" );
+									else
+										anyadirHijoArbol( raiz, tam + f.getName() + " = " + aString(f.get( o ), f.getType()) );
 						}
 						numLlamadas--;
 					}
@@ -289,7 +354,10 @@ public class ExploradorObjetos {
 				} catch (Exception e) {
 					if (camposAMostrar.equals("") || camposAMostrar.contains(f.getName()))
 						if (!soloCalcTamanyo)
-							atsErr += ( miSep + f.getName() + " (Error " + e.getClass().getName() + " / " + e.getMessage() + ")\n");
+							if (raiz==null)
+								atsErr += ( miSep + f.getName() + " (Error " + e.getClass().getName() + " / " + e.getMessage() + ")\n");
+							else
+								anyadirHijoArbol( raiz, "[ERROR!] " + f.getName() + " (Error " + e.getClass().getName() + " / " + e.getMessage() + ")" );
 					hayErr = true;
 					e.printStackTrace();
 				}
@@ -434,58 +502,58 @@ public class ExploradorObjetos {
 		System.out.println();
 		
 		Integer o = new Integer(7);
-		System.out.println( atributosYValoresToString( "INTEGER 7", "", o, true, false ) );
+		System.out.println( "INTEGER 7" + atributosYValoresToString( "", o, true, false ) );
 		
 		String tit = "ARRAY DE ENTEROS CON 7";
 		int[] ar = new int[10];
 		ar[0] = 7;
-		System.out.println( atributosYValoresToString( tit, "", ar, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", ar, false, true ) );
 
 		tit = "ARRAYLIST DE ENTEROS CON 7,2,3";
 		ArrayList<Integer> al = new ArrayList<>();
 		al.add( new Integer(7) );
 		al.add( new Integer(2) );
 		al.add( new Integer(3) );
-		System.out.println( atributosYValoresToString( tit, "", al, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", al, false, true ) );
 		
 		tit = "LINKEDLIST DE ENTEROS CON 7,2,3";
 		LinkedList<Integer> ll = new LinkedList<>();
 		ll.add( new Integer(7) );
 		ll.add( new Integer(2) );
 		ll.add( new Integer(3) );
-		System.out.println( atributosYValoresToString( tit, "", ll, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", ll, false, true ) );
 		
 		tit = "LINKEDLIST DE ENTEROS CON 150 VALORES";
 		ll = new LinkedList<>();
 		for (int i=1; i<=150; i++) ll.add( new Integer(i) );
-		System.out.println( atributosYValoresToString( tit, "", ll, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", ll, false, true ) );
 		System.out.println( "Tamaño de linkedlist: " + getTamanyoObjeto(ll) + " bytes.");
 		System.out.println();
 
 		tit = "ARRAY DE STRINGS";
 		String[] sts = { "Hola", "Adiós", "Vale" };
-		System.out.println( atributosYValoresToString( tit, "", sts, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", sts, false, true ) );
 		
 		tit = "HASHMAP DE STRINGS-ENTEROS CON 2 VALORES";
 		HashMap<String,Integer> hm = new HashMap<>();
 		hm.put( "Clave1", 1 );
 		hm.put( "Clave2", 2 );
-		System.out.println( atributosYValoresToString( tit, "", hm, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hm, false, true ) );
 
 		tit = "HASHSET DE STRINGS (vacío, cap. inicial 2, con 1, 2, 3 y 4 elementos)";
 		HashSet<String> hs = new HashSet<>(2);
-		System.out.println( atributosYValoresToString( tit, "", hs, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hs, false, true ) );
 		hs.add( "Andoni" );
-		System.out.println( atributosYValoresToString( tit, "", hs, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hs, false, true ) );
 		hs.add( "Elena" );
-		System.out.println( atributosYValoresToString( tit, "", hs, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hs, false, true ) );
 		hs.add( "Rosa" );
-		System.out.println( atributosYValoresToString( tit, "", hs, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hs, false, true ) );
 		hs.add( "Asier" );
-		System.out.println( atributosYValoresToString( tit, "", hs, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", hs, false, true ) );
 
 		tit = "HASHSET DE STRINGS SOLO CON LA ESTRUCTURA";
-		System.out.println( atributosYValoresToString( tit, "", hs, false, false, 
+		System.out.println( tit + atributosYValoresToString( "", hs, false, false, 
 				"map#table#hash#key#value#next#size#loadFactor#[]" ) );
 		// Ad hoc para este ejemplo...
 		System.out.println( "2553165 % 8 = " + (2553165%8) + "   -    63559309 % 8 = " + (63559309%8) );
@@ -497,10 +565,10 @@ public class ExploradorObjetos {
 		ts.add( "Elena" );
 		ts.add( "Asier" );
 		ts.add( "Rosa" );
-		System.out.println( atributosYValoresToString( tit, "", ts, false, true ) );
+		System.out.println( tit + atributosYValoresToString( "", ts, false, true ) );
 
 		tit = "TREESET DE STRINGS SOLO CON LA ESTRUCTURA";
-		System.out.println( atributosYValoresToString( tit, "", ts, false, false, 
+		System.out.println( tit + atributosYValoresToString( "", ts, false, false, 
 				"root#key#left#right" ) );
 
 		Object oo = new Object();
