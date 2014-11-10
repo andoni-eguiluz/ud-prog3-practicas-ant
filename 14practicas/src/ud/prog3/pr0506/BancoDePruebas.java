@@ -9,13 +9,25 @@ public class BancoDePruebas {
 	private static Object ultimoResultado;
 	
 	/** Realiza un test del banco de pruebas, inicializándolo previamente y devolviendo el tiempo que tarda<p>
+	 * @param proc	Proceso a probar
+	 * @param tamanyoPrueba	Tamaño a pasar a ese proceso (típicamente, tamaño de la estructura que ese proceso maneja)
+	 * @return	Tiempo que tarda el proceso (en nanosegundos). 
+	 */
+	public static long realizaTest( ProcesoProbable proc, int tamanyoPrueba ) {
+		proc.init( tamanyoPrueba );
+		ultimoTiempo = System.nanoTime();
+		ultimoResultado = proc.test();
+		return System.nanoTime() - ultimoTiempo;
+	}	
+	
+	/** Realiza un test del banco de pruebas, inicializándolo previamente y devolviendo el tiempo que tarda<p>
 	 * Atención: la granularidad de la medición de tiempo de System.currentTimeMillis() hace que medir tiempos por debajo
 	 * de 10-15 milisegundos no sea nada preciso (especialmente en SO Windows). Usar System.nanoTime() en lugar de este método para ese caso.
 	 * @param proc	Proceso a probar
 	 * @param tamanyoPrueba	Tamaño a pasar a ese proceso (típicamente, tamaño de la estructura que ese proceso maneja)
 	 * @return	Tiempo que tarda el proceso (en milisegundos). 
 	 */
-	public static long realizaTest( ProcesoProbable proc, int tamanyoPrueba ) {
+	public static long realizaTestMillis( ProcesoProbable proc, int tamanyoPrueba ) {
 		proc.init( tamanyoPrueba );
 		ultimoTiempo = System.currentTimeMillis();
 		ultimoResultado = proc.test();
