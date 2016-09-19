@@ -2,8 +2,6 @@ package ud.prog3.pr01;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.logging.Logger;
-
 import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -16,11 +14,8 @@ import javax.swing.event.ListDataListener;
  * de los elementos en la lista, borrar elementos y añadir nuevos.
  */
 public class ListaDeReproduccion implements ListModel<String> {
-	ArrayList<File> ficherosLista;        // ficheros de la lista de reproducción
-	int ficheroEnCurso = -1;   // Fichero seleccionado (-1 si no hay ninguno seleccionado)
-
-	// Logger de la clase
-	private static Logger logger = Logger.getLogger( ListaDeReproduccion.class.getName() );
+	ArrayList<File> ficherosLista;     // ficheros de la lista de reproducción
+	int ficheroEnCurso = -1;           // Fichero seleccionado (-1 si no hay ninguno seleccionado)
 	
 	/** Devuelve uno de los ficheros de la lista
 	 * @param posi	Posición del fichero en la lista (de 0 a size()-1)
@@ -49,7 +44,7 @@ public class ListaDeReproduccion implements ListModel<String> {
 		filtroFicheros = filtroFicheros.replaceAll( "\\.", "\\\\." );  // Pone el símbolo de la expresión regular \. donde figure un .
 		return 0;
 	}
-
+	
 	
 	//
 	// Métodos de selección

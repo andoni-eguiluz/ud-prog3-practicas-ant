@@ -6,20 +6,14 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
+import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
+import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.embedded.FullScreenStrategy;
 import uk.co.caprica.vlcj.player.embedded.windows.Win32FullScreenStrategy;
-
-// TODO: Arreglar los eventos de la JList que si carga muchos no se ven bien
 
 /** Ventana principal de reproductor de vídeo
  * Utiliza la librería VLCj que debe estar instalada y configurada
@@ -223,18 +217,30 @@ public class VideoPlayer extends JFrame {
 			ficheros = args[0];
 			path = args[1];
 		}
-		// Buscar vlc como variable de entorno
-		String vlcPath = System.getenv().get( "vlc" );
-		if (vlcPath==null)
-			// Poner VLC a mano
-			System.setProperty("jna.library.path", "c:\\Archivos de programa\\videolan\\vlc-2.1.5");
-		else
-			// Poner VLC desde la variable de entorno
-			System.setProperty( "jna.library.path", vlcPath );
+		
+		// Inicializar VLC.
+		// Probar con el buscador nativo...
+		boolean found = new NativeDiscovery().discover();
+    	// System.out.println( LibVlc.INSTANCE.libvlc_get_version() );  // Visualiza versión de VLC encontrada
+    	// Si no se encuentra probar otras opciones:
+    	if (!found) {
+			// Buscar vlc como variable de entorno
+			String vlcPath = System.getenv().get( "vlc" );
+			if (vlcPath==null) {  // Poner VLC a mano
+	        	System.setProperty("jna.library.path", "c:\\Program Files\\videolan\\VLC");
+			} else {  // Poner VLC desde la variable de entorno
+				System.setProperty( "jna.library.path", vlcPath );
+			}
+		}
+    	
+    	// Lanzar ventana
 		SwingUtilities.invokeLater( new Runnable() {
 			@Override
 			public void run() {
 				miVentana = new VideoPlayer();
+				// Descomentar estas dos líneas para ver un vídeo de ejemplo
+				// miVentana.listaRepVideos.ficherosLista = new ArrayList<File>();
+				// miVentana.listaRepVideos.ficherosLista.add( new File("test/res/[Official Video] Daft Punk - Pentatonix.mp4") );				
 				miVentana.setVisible( true );
 				miVentana.listaRepVideos.add( path, ficheros );
 				miVentana.listaRepVideos.irAPrimero();
